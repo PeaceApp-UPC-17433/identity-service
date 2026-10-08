@@ -15,7 +15,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
+/** Autentica la peticion a partir del Bearer token. El principal es el userId (UUID). */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -27,20 +29,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                     @NonNull HttpServletResponse response,
-                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
             try {
-                Claims claims = jwtService.parseClaims(token);
+                Claims claims = jwtService.parseClaims(header.substring(7));
+                UUID userId = UUID.fromString(claims.getSubject());
                 String role = claims.get("role", String.class);
                 var authentication = new UsernamePasswordAuthenticationToken(
-                        claims.getSubject(),
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                        userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (JwtException | IllegalArgumentException ex) {
+                // Token invalido o expirado: la peticion sigue sin autenticar y el entry point responde 401.
                 SecurityContextHolder.clearContext();
             }
         }

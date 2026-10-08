@@ -1,0 +1,36 @@
+# Perfil dev: maquina local (./mvnw spring-boot:run) y docker-compose.
+# Valores por defecto pensados para que el servicio arranque sin configurar nada.
+spring:
+  datasource:
+    # Postgres del docker-compose expuesto en el puerto 5433 del host.
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/identitydb}
+    username: ${DB_USERNAME:identity}
+    password: ${DB_PASSWORD:identity}
+
+identity:
+  jwt:
+    secret: ${JWT_SECRET:local-dev-only-secret-change-me-in-any-shared-env}
+  verification:
+    # Devuelve el token de verificacion en la respuesta mientras notification-service (BC-08)
+    # no envia correos. Nunca en prod.
+    expose-token-in-response: ${EXPOSE_VERIFICATION_TOKEN:true}
+  bootstrap-admin:
+    email: ${ADMIN_EMAIL:admin@peaceapp.pe}
+    password: ${ADMIN_PASSWORD:Admin12345}
+
+# Documentacion interactiva: http://localhost:8081/scalar
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  # Solo los controladores del servicio; excluye los endpoints internos de Scalar.
+  packages-to-scan: pe.upc.peaceapp.identity.api
+scalar:
+  enabled: true
+  path: /scalar
+  url: /v3/api-docs
+  page-title: PeaceApp - identity-service
+
+logging:
+  level:
+    pe.upc.peaceapp.identity: DEBUG

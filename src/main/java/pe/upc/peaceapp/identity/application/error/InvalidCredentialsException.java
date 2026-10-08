@@ -1,4 +1,4 @@
-package pe.upc.peaceapp.identity.api.error;
+package pe.upc.peaceapp.identity.application.error;
 
 public class InvalidCredentialsException extends RuntimeException {
     public InvalidCredentialsException() {

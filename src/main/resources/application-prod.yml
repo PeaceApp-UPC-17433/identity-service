@@ -1,0 +1,36 @@
+# Perfil prod: se activa con SPRING_PROFILES_ACTIVE=prod (Kubernetes).
+# Sin valores por defecto: si falta una variable obligatoria el servicio no arranca (TS-08, CA-06).
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+
+identity:
+  jwt:
+    secret: ${JWT_SECRET}
+  verification:
+    expose-token-in-response: false
+
+# Sin documentacion publica de la API en produccion.
+springdoc:
+  api-docs:
+    enabled: false
+scalar:
+  enabled: false
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO

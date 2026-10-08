@@ -1,26 +1,45 @@
+# Entorno local de identity-service: `docker compose up --build`
+# Valores por defecto SOLO para desarrollo; se pueden sobrescribir con un archivo .env (ver .env.example).
 services:
-  identity-service:
-    build: .
-    ports:
-      - "8081:8081"
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/identitydb
-      DB_USERNAME: identity
-      DB_PASSWORD: identity
-      JWT_SECRET: local-dev-secret-change-me-local-dev-secret
-    depends_on:
-      - postgres
-
   postgres:
     image: postgres:16-alpine
+    container_name: peaceapp-identity-db
     environment:
-      POSTGRES_DB: identitydb
-      POSTGRES_USER: identity
-      POSTGRES_PASSWORD: identity
+      POSTGRES_DB: ${DB_NAME:-identitydb}
+      POSTGRES_USER: ${DB_USERNAME:-identity}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-identity}
     ports:
-      - "5432:5432"
+      # Puerto del host 5433 para no chocar con un Postgres local en 5432.
+      - "${DB_HOST_PORT:-5433}:5432"
     volumes:
       - identity_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  identity-service:
+    build: .
+    image: peaceapp/identity-service:local
+    container_name: peaceapp-identity-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${IDENTITY_HOST_PORT:-8081}:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-identitydb}
+      DB_USERNAME: ${DB_USERNAME:-identity}
+      DB_PASSWORD: ${DB_PASSWORD:-identity}
+      JWT_SECRET: ${JWT_SECRET:-local-dev-only-secret-change-me-in-any-shared-env}
+      JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-60}
+      # Devuelve el token de verificacion en /register mientras notification-service no envia correos.
+      EXPOSE_VERIFICATION_TOKEN: ${EXPOSE_VERIFICATION_TOKEN:-true}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@peaceapp.pe}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin12345}
+    restart: unless-stopped
 
 volumes:
   identity_pg_data:

@@ -1,26 +1,50 @@
+# Configuracion comun a todos los ambientes.
+# Lo especifico de cada ambiente vive en application-<perfil>.yml:
+#   dev  -> local / docker-compose (perfil por defecto)
+#   prod -> Kubernetes; todo llega por variables de entorno, sin valores por defecto
+#   test -> pruebas automatizadas (src/test/resources)
 server:
   port: 8081
 
 spring:
   application:
     name: identity-service
+  profiles:
+    default: dev
 
-  datasource:
-    url: ${DB_URL:jdbc:h2:mem:identitydb;DB_CLOSE_DELAY=-1}
-    username: ${DB_USERNAME:sa}
-    password: ${DB_PASSWORD:}
-
+  # El esquema lo gestiona Flyway (src/main/resources/db/migration); Hibernate solo lo valida.
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     open-in-view: false
+
+  flyway:
+    enabled: true
 
 identity:
   jwt:
-    secret: ${JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
-    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+    secret: ${JWT_SECRET:}
+    issuer: peaceapp-identity
+    access-token-minutes: ${JWT_EXPIRATION_MINUTES:60}
+    refresh-token-days: ${REFRESH_TOKEN_DAYS:7}
   security:
     max-failed-login-attempts: 5
+    lock-duration-minutes: ${LOCK_DURATION_MINUTES:15}
+  verification:
+    token-hours: 24
+    expose-token-in-response: false
+  profile:
+    max-interest-zones: 10
+  bootstrap-admin:
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
+
+# Documentacion de la API: apagada por defecto, solo el perfil dev la habilita.
+springdoc:
+  api-docs:
+    enabled: false
+scalar:
+  enabled: false
 
 management:
   endpoints:
