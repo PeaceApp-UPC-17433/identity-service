@@ -34,14 +34,22 @@ public class AuthService {
         this.maxFailedLoginAttempts = maxFailedLoginAttempts;
     }
 
-    @Transactional
-    public User register(String email, String rawPassword) {
-        if (userRepository.existsByEmail(email)) {
-            throw new EmailAlreadyRegisteredException(email);
-        }
-        User user = new User(email, passwordEncoder.encode(rawPassword));
-        return userRepository.save(user);
+@Transactional
+public User register(String email, String rawPassword) {
+    String normalizedEmail = email.toLowerCase(java.util.Locale.ROOT);
+
+    if (userRepository.existsByEmail(normalizedEmail)) {
+        throw new EmailAlreadyRegisteredException(normalizedEmail);
     }
+
+    User user = new User(
+            normalizedEmail,
+            passwordEncoder.encode(rawPassword)
+    );
+
+    return userRepository.save(user);
+}
+
 
     @Transactional
     public LoginResponse login(String email, String rawPassword) {
