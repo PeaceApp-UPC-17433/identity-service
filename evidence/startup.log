@@ -30,7 +30,7 @@ identity-service-1  | 2026-10-30T05:24:31.825Z  WARN 1 --- [identity-service] [ 
 identity-service-1  | 2026-10-30T05:24:31.838Z  INFO 1 --- [identity-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
 identity-service-1  | 2026-10-30T05:24:32.208Z  WARN 1 --- [identity-service] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
 identity-service-1  | 
-identity-service-1  | Using generated security password: 7d400874-a1f4-4afc-91db-9aff93db9086
+identity-service-1  | Using generated security password: [REDACTED]
 identity-service-1  | 
 identity-service-1  | This generated password is for development use only. Your security configuration must be updated before running your application in production.
 identity-service-1  | 
