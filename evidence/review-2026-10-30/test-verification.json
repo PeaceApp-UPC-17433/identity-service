@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-30",
+  "service": "identity-service",
+  "command": "mvn -B -ntp clean verify (Java 21)",
+  "tests": 20,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "source_sha256": "df39fbd0e25964ab88f87d60c9d061f8cc0fb5dcbd79962e4bd94e5aad9cbc8b",
+  "coverage_all_classes": {
+    "instruction": {
+      "covered": 513,
+      "missed": 142,
+      "percent": 78.32
+    },
+    "branch": {
+      "covered": 6,
+      "missed": 6,
+      "percent": 50.0
+    },
+    "line": {
+      "covered": 124,
+      "missed": 32,
+      "percent": 79.49
+    }
+  },
+  "coverage_application_package": {
+    "instruction": {
+      "covered": 102,
+      "missed": 51,
+      "percent": 66.67
+    },
+    "branch": {
+      "covered": 6,
+      "missed": 2,
+      "percent": 75.0
+    },
+    "line": {
+      "covered": 27,
+      "missed": 8,
+      "percent": 77.14
+    }
+  },
+  "gate": "70% LINE coverage of the application package only; full report includes every class",
+  "suites": [
+    {
+      "name": "pe.upc.peaceapp.identity.api.AuthControllerTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        "loginReturns200WithJwtToken",
+        "registerRejectsPasswordShorterThanEightCharacters",
+        "registerReturns201WhenDataIsValid",
+        "loginRejectsMissingRequestBody",
+        "registerRejectsMissingRequestBody",
+        "registerRejectsBlankRequiredFields",
+        "registerRejectsMalformedEmail"
+      ]
+    },
+    {
+      "name": "pe.upc.peaceapp.identity.api.ProfileControllerTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        "addInterestZoneRejectsMissingBody",
+        "getProfileReturnsUserData",
+        "addInterestZoneReturns201"
+      ]
+    },
+    {
+      "name": "pe.upc.peaceapp.identity.application.AuthServiceTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        "loginFailsWhenAccountIsAlreadyLocked",
+        "registerFailsWhenEmailAlreadyRegistered",
+        "registerCreatesUserWhenEmailIsNew",
+        "loginLocksAccountAfterMaxFailedAttempts",
+        "registerNormalizesEmailToLowercase"
+      ]
+    },
+    {
+      "name": "pe.upc.peaceapp.identity.IdentityServiceApplicationTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        "contextLoads"
+      ]
+    },
+    {
+      "name": "pe.upc.peaceapp.identity.security.JwtServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        "parseClaimsRejectsInvalidToken",
+        "parseClaimsRejectsTokenSignedWithDifferentKey",
+        "issueTokenHasCorrectExpiration",
+        "issueTokenIncludesUserClaims"
+      ]
+    }
+  ]
+}
