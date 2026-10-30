@@ -85,4 +85,37 @@ class AuthControllerTest {
 
         verifyNoInteractions(authService);
     }
+
+    @Test
+    void registerRejectsPasswordShorterThanEightCharacters() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"email":"nuevo@peaceapp.pe","password":"short"}
+                        """))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(authService);
+    }
+
+    @Test
+    void registerRejectsMalformedEmail() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"email":"correo-invalido","password":"clave12345"}
+                        """))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(authService);
+    }
+
+    @Test
+    void registerRejectsBlankRequiredFields() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"email":"","password":""}
+                        """))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(authService);
+    }
 }
