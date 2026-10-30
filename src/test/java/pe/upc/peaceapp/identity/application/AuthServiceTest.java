@@ -11,6 +11,7 @@ import pe.upc.peaceapp.identity.api.error.InvalidCredentialsException;
 import pe.upc.peaceapp.identity.domain.model.User;
 import pe.upc.peaceapp.identity.domain.repository.UserRepository;
 import pe.upc.peaceapp.identity.security.JwtService;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import java.util.Optional;
 
@@ -89,4 +90,27 @@ class AuthServiceTest {
 
         verify(passwordEncoder, never()).matches(any(), any());
     }
+    @Test
+void registerNormalizesEmailToLowercase() {
+    authService = newAuthService();
+
+   when(userRepository.existsByEmail(anyString()))
+        .thenReturn(false);
+
+    when(passwordEncoder.encode("clave12345"))
+            .thenReturn("hash");
+
+    when(userRepository.save(any(User.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+    User created = authService.register(
+            "Usuario@PeaceApp.pe", "clave12345"
+    );
+
+    assertThat(created.getEmail())
+            .isEqualTo("usuario@peaceapp.pe");
+
+    verify(userRepository)
+            .existsByEmail("usuario@peaceapp.pe");
+}
 }
