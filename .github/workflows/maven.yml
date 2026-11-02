@@ -47,6 +47,7 @@ jobs:
           path: |
             target/surefire-reports/
             target/site/jacoco/
+            target/cucumber-reports/
             health.json
             containers.txt
             containers.log

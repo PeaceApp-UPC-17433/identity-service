@@ -37,14 +37,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Trivy dependency and secret scan
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: fs
-          scanners: vuln,secret
-          severity: HIGH,CRITICAL
-          format: table
-          output: trivy-fs-report.txt
-          exit-code: '0'
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work aquasec/trivy:0.58.1 fs \
+            --scanners vuln,secret --severity HIGH,CRITICAL --format table \
+            --output trivy-fs-report.txt .
       - run: cat trivy-fs-report.txt
       - uses: actions/upload-artifact@v4
         if: always()
@@ -82,13 +78,9 @@ jobs:
       - name: Build image
         run: docker build -t scan-target:ci .
       - name: Trivy image scan
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: scan-target:ci
-          severity: HIGH,CRITICAL
-          format: table
-          output: trivy-image-report.txt
-          exit-code: '0'
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:/work" aquasec/trivy:0.58.1 image \
+            --severity HIGH,CRITICAL --format table --output /work/trivy-image-report.txt scan-target:ci
       - run: cat trivy-image-report.txt
       - uses: actions/upload-artifact@v4
         if: always()
