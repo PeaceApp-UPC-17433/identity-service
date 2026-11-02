@@ -53,7 +53,7 @@ private String normalizeEmail(String email) {
     return email.toLowerCase(java.util.Locale.ROOT);
 }
 
-    @Transactional
+    @Transactional(noRollbackFor = InvalidCredentialsException.class)
     public LoginResponse login(String email, String rawPassword) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(InvalidCredentialsException::new);
