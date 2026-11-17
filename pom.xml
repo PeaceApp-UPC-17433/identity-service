@@ -13,7 +13,7 @@
 
   <groupId>pe.upc.peaceapp</groupId>
   <artifactId>identity-service</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.3.0-SNAPSHOT</version>
   <name>identity-service</name>
   <description>PeaceApp - BC-01 Identity &amp; Access (registro, autenticacion, perfil, zonas de interes, roles y jurisdiccion institucional)</description>
 
@@ -21,7 +21,9 @@
     <java.version>21</java.version>
     <!-- Correcciones DevSecOps (hallazgos Trivy): versiones parcheadas de dependencias gestionadas por Spring Boot -->
     <postgresql.version>42.7.11</postgresql.version>
-    <tomcat.version>10.1.35</tomcat.version>
+    <tomcat.version>10.1.62</tomcat.version>
+    <!-- Testcontainers 1.21: compatible con Docker Engine 29 de los runners (API >= 1.44) -->
+    <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
 
   <dependencies>
@@ -44,6 +46,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <!-- 4.3 Observabilidad: metricas en formato Prometheus (/actuator/prometheus) -->
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
     </dependency>
 
     <dependency>
