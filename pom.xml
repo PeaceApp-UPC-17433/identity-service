@@ -13,7 +13,7 @@
 
   <groupId>pe.upc.peaceapp</groupId>
   <artifactId>identity-service</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.3.0-SNAPSHOT</version>
   <name>identity-service</name>
   <description>PeaceApp - BC-01 Identity &amp; Access (registro, autenticacion, perfil, zonas de interes, roles y jurisdiccion institucional)</description>
 
