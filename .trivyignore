@@ -1,12 +1,5 @@
 # Excepciones temporales aceptadas en la Sprint Review (informe, seccion 3.7.3, Tabla 73).
-# Vencen el 22/11/2026 (cierre del Sprint 7): despues Trivy vuelve a bloquear el pipeline.
-# Origen: trivy-image-report.txt del commit 02fc016 (9 CRITICAL de Spring Boot 3.3.4).
+# Solo se corrigen migrando a Spring Boot 3.5.x. Vencen el 22/11/2026: despues Trivy vuelve a bloquear.
 CVE-2024-38821 exp:2026-11-22
 CVE-2026-22732 exp:2026-11-22
-CVE-2026-41293 exp:2026-11-22
-CVE-2026-43512 exp:2026-11-22
-CVE-2026-43515 exp:2026-11-22
 CVE-2026-47884 exp:2026-11-22
-CVE-2026-65182 exp:2026-11-22
-CVE-2026-65905 exp:2026-11-22
-CVE-2026-68525 exp:2026-11-22
