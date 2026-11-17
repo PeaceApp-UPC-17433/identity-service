@@ -22,6 +22,8 @@
     <!-- Correcciones DevSecOps (hallazgos Trivy): versiones parcheadas de dependencias gestionadas por Spring Boot -->
     <postgresql.version>42.7.11</postgresql.version>
     <tomcat.version>10.1.35</tomcat.version>
+    <!-- Testcontainers 1.21: compatible con Docker Engine 29 de los runners (API >= 1.44) -->
+    <testcontainers.version>1.21.3</testcontainers.version>
   </properties>
 
   <dependencies>
