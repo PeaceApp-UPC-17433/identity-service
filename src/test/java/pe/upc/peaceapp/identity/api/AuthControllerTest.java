@@ -24,7 +24,8 @@ class AuthControllerTest {
         authService = mock(AuthService.class);
 
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new AuthController(authService, mock(pe.upc.peaceapp.identity.application.PasswordResetService.class)))
+                .standaloneSetup(new AuthController(authService, mock(pe.upc.peaceapp.identity.application.PasswordResetService.class),
+                        mock(pe.upc.peaceapp.identity.application.mfa.MfaService.class), mock(pe.upc.peaceapp.identity.security.JwtService.class)))
                 .build();
     }
 
@@ -35,13 +36,13 @@ class AuthControllerTest {
                 .content("""
                     {
                       "email": "nuevo@peaceapp.pe",
-                      "password": "clave12345"
+                      "password": "Clave12345"
                     }
                     """))
                 .andExpect(status().isCreated());
 
         verify(authService).register(
-                "nuevo@peaceapp.pe", "clave12345", null, null, null);
+                "nuevo@peaceapp.pe", "Clave12345", null, null, null, null);
     }
 
     @Test
@@ -117,5 +118,15 @@ class AuthControllerTest {
                         """))
                 .andExpect(status().isBadRequest());
         verifyNoInteractions(authService);
+    }
+
+    @Test
+    void registerRejectsPasswordsThatBreakThePolicy() throws Exception {
+        for (String weak : new String[]{"clave12345", "CLAVE12345", "ClaveClave", "Cl1", "Clave1" + "x".repeat(70)}) {
+            mockMvc.perform(post("/api/v1/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"email\":\"nuevo@peaceapp.pe\",\"password\":\"" + weak + "\"}"))
+                    .andExpect(status().isBadRequest());
+        }
     }
 }

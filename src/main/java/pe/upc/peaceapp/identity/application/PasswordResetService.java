@@ -10,6 +10,7 @@ import pe.upc.peaceapp.identity.api.error.InvalidResetTokenException;
 import pe.upc.peaceapp.identity.domain.model.PasswordResetToken;
 import pe.upc.peaceapp.identity.domain.repository.PasswordResetTokenRepository;
 import pe.upc.peaceapp.identity.domain.repository.UserRepository;
+import pe.upc.peaceapp.identity.messaging.EmailNotifications;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -20,6 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.Map;
 
 @Service
 public class PasswordResetService {
@@ -29,17 +31,20 @@ public class PasswordResetService {
     private final UserRepository users;
     private final PasswordResetTokenRepository tokens;
     private final PasswordEncoder passwordEncoder;
-    private final PasswordResetNotifier notifier;
+    private final EmailNotifications notifications;
+    private final String webBaseUrl;
     private final Clock clock;
     private final Duration validity;
 
     public PasswordResetService(UserRepository users, PasswordResetTokenRepository tokens, PasswordEncoder passwordEncoder,
-                                PasswordResetNotifier notifier, Clock clock,
+                                EmailNotifications notifications, Clock clock,
+                                @Value("${identity.web-base-url}") String webBaseUrl,
                                 @Value("${identity.password-reset.validity-minutes:30}") long validityMinutes) {
         this.users = users;
         this.tokens = tokens;
         this.passwordEncoder = passwordEncoder;
-        this.notifier = notifier;
+        this.notifications = notifications;
+        this.webBaseUrl = webBaseUrl.replaceAll("/+$", "");
         this.clock = clock;
         this.validity = Duration.ofMinutes(validityMinutes);
     }
@@ -53,7 +58,8 @@ public class PasswordResetService {
             Instant now = clock.instant();
             Instant expiresAt = now.plus(validity);
             tokens.save(new PasswordResetToken(user.getId(), hash(token), expiresAt, now));
-            notifier.send(user.getEmail(), token, expiresAt);
+            notifications.request("PASSWORD_RESET", user.getEmail(), user.getLocale(),
+                    Map.of("resetUrl", webBaseUrl + "/reset-password?token=" + token, "expiresMinutes", String.valueOf(validity.toMinutes())));
             log.info("Recuperacion de contrasena solicitada userId={}", user.getId());
         }, () -> log.info("Recuperacion de contrasena solicitada para un correo inexistente"));
     }
@@ -69,6 +75,7 @@ public class PasswordResetService {
         stored.setUsedAt(now);
         users.save(user);
         tokens.save(stored);
+        notifications.request("PASSWORD_CHANGED", user.getEmail(), user.getLocale(), Map.of());
         log.info("Contrasena restablecida userId={}", user.getId());
     }
 

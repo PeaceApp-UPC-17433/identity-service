@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 class AccountServiceTest {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private UserRepository users;
+    private CapturingPublisher publisher;
+    private EmailVerificationService verification;
     private AccountService service;
     private User user;
     private UUID id;
@@ -29,7 +31,9 @@ class AccountServiceTest {
     @BeforeEach
     void setUp() {
         users = mock(UserRepository.class);
-        service = new AccountService(users, encoder);
+        publisher = new CapturingPublisher();
+        verification = mock(EmailVerificationService.class);
+        service = new AccountService(users, encoder, new pe.upc.peaceapp.identity.messaging.EmailNotifications(publisher), verification);
         id = UUID.randomUUID();
         user = new User("ana@peaceapp.pe", encoder.encode("clave-actual-1"));
         user.setId(id);
@@ -58,6 +62,8 @@ class AccountServiceTest {
                 .isInstanceOf(CurrentPasswordMismatchException.class);
         service.changePassword(id, "clave-actual-1", "nueva-clave-1");
         assertThat(encoder.matches("nueva-clave-1", user.getPasswordHash())).isTrue();
+        assertThat(publisher.events).hasSize(1);
+        assertThat(publisher.events.get(0).template()).isEqualTo("PASSWORD_CHANGED");
     }
 
     @Test
@@ -90,5 +96,14 @@ class AccountServiceTest {
         assertThat(user.getDeletedAt()).isNotNull();
         when(users.findAllById(java.util.List.of(id))).thenReturn(java.util.List.of(user));
         assertThat(service.summaries(java.util.List.of(id)).get(0).displayName()).isEqualTo("Usuario eliminado");
+    }
+
+    @Test
+    void changingTheEmailMarksItUnverifiedAndIssuesANewCode() {
+        user.setEmailVerified(true);
+        service.updateProfile(id, new UpdateProfileRequest(null, null, null, null, "Nuevo@PeaceApp.pe"));
+        assertThat(user.getEmail()).isEqualTo("nuevo@peaceapp.pe");
+        assertThat(user.isEmailVerified()).isFalse();
+        org.mockito.Mockito.verify(verification).issue(user);
     }
 }

@@ -22,8 +22,30 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  rabbitmq:
+    host: ${RABBIT_HOST}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASSWORD}
+    publisher-confirm-type: correlated
+    publisher-returns: true
 
 identity:
+  messaging:
+    exchange: ${EVENTS_EXCHANGE:peaceapp.events}
+  outbox:
+    poll-interval-ms: ${OUTBOX_POLL_MS:1000}
+  web-base-url: ${WEB_BASE_URL}
+  mfa:
+    issuer: ${MFA_ISSUER:PeaceApp}
+    required-for-staff: ${MFA_REQUIRED_FOR_STAFF:true}
+    max-failed-attempts: 5
+    lock-minutes: 5
+  verification:
+    otp-secret: ${OTP_SECRET}
+    code-ttl-minutes: ${VERIFICATION_TTL_MINUTES:10}
+    max-attempts: ${VERIFICATION_MAX_ATTEMPTS:5}
+    resend-cooldown-seconds: ${VERIFICATION_RESEND_SECONDS:60}
   jwt:
     secret: ${JWT_SECRET}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}

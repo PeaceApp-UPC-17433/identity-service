@@ -39,6 +39,7 @@ public class AdminBootstrap implements ApplicationRunner {
         String normalized = AuthService.normalizeEmail(email);
         User admin = users.findByEmail(normalized).orElseGet(() -> new User(normalized, passwordEncoder.encode(password)));
         admin.setRole(Role.ADMINISTRADOR);
+        admin.setEmailVerified(true);
         users.save(admin);
         log.info("Administrador inicial creado userId={}", admin.getId());
     }

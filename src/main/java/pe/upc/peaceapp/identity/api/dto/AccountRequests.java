@@ -3,6 +3,7 @@ package pe.upc.peaceapp.identity.api.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import pe.upc.peaceapp.identity.domain.model.Role;
 
@@ -20,7 +21,7 @@ public final class AccountRequests {
 
     public record ChangePasswordRequest(
             @NotBlank String currentPassword,
-            @NotBlank @Size(min = 8, max = 72) String newPassword) {
+            @NotBlank @Pattern(regexp = PasswordPolicy.REGEX, message = PasswordPolicy.MESSAGE) String newPassword) {
     }
 
     public record ForgotPasswordRequest(@NotBlank @Email String email) {
@@ -28,7 +29,7 @@ public final class AccountRequests {
 
     public record ResetPasswordRequest(
             @NotBlank String token,
-            @NotBlank @Size(min = 8, max = 72) String newPassword) {
+            @NotBlank @Pattern(regexp = PasswordPolicy.REGEX, message = PasswordPolicy.MESSAGE) String newPassword) {
     }
 
     public record ChangeRoleRequest(@NotNull Role role) {

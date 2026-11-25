@@ -49,4 +49,67 @@ public class ApiExceptionHandler {
     public ProblemDetail handleNotFound(java.util.NoSuchElementException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     }
+
+    @ExceptionHandler(VerificationExceptions.InvalidCodeException.class)
+    public ProblemDetail handleInvalidCode(VerificationExceptions.InvalidCodeException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setProperty("code", "INVALID_CODE");
+        return problem;
+    }
+
+    @ExceptionHandler(VerificationExceptions.TooManyAttemptsException.class)
+    public ProblemDetail handleTooManyAttempts(VerificationExceptions.TooManyAttemptsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+        problem.setProperty("code", "TOO_MANY_ATTEMPTS");
+        return problem;
+    }
+
+    @ExceptionHandler(VerificationExceptions.ResendTooSoonException.class)
+    public ProblemDetail handleResendTooSoon(VerificationExceptions.ResendTooSoonException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+        problem.setProperty("code", "RESEND_TOO_SOON");
+        problem.setProperty("retryAfterSeconds", ex.retryAfterSeconds());
+        return problem;
+    }
+
+    @ExceptionHandler(VerificationExceptions.AlreadyVerifiedException.class)
+    public ProblemDetail handleAlreadyVerified(VerificationExceptions.AlreadyVerifiedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setProperty("code", "ALREADY_VERIFIED");
+        return problem;
+    }
+
+    @ExceptionHandler(org.springframework.orm.ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleConcurrentUpdate(org.springframework.orm.ObjectOptimisticLockingFailureException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "La informacion cambio mientras se procesaba. Intenta de nuevo.");
+    }
+
+    @ExceptionHandler(MfaExceptions.InvalidMfaCodeException.class)
+    public ProblemDetail handleInvalidMfaCode(MfaExceptions.InvalidMfaCodeException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setProperty("code", "INVALID_MFA_CODE");
+        return problem;
+    }
+
+    @ExceptionHandler(MfaExceptions.MfaLockedException.class)
+    public ProblemDetail handleMfaLocked(MfaExceptions.MfaLockedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+        problem.setProperty("code", "MFA_LOCKED");
+        problem.setProperty("retryAfterSeconds", ex.retryAfterSeconds());
+        return problem;
+    }
+
+    @ExceptionHandler(MfaExceptions.MfaStateException.class)
+    public ProblemDetail handleMfaState(MfaExceptions.MfaStateException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setProperty("code", ex.code());
+        return problem;
+    }
+
+    @ExceptionHandler(MfaExceptions.InvalidChallengeException.class)
+    public ProblemDetail handleInvalidChallenge(MfaExceptions.InvalidChallengeException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        problem.setProperty("code", "MFA_CHALLENGE_EXPIRED");
+        return problem;
+    }
 }

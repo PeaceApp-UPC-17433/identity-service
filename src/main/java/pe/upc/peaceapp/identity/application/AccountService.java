@@ -11,6 +11,7 @@ import pe.upc.peaceapp.identity.api.error.EmailAlreadyRegisteredException;
 import pe.upc.peaceapp.identity.domain.model.Role;
 import pe.upc.peaceapp.identity.domain.model.User;
 import pe.upc.peaceapp.identity.domain.repository.UserRepository;
+import pe.upc.peaceapp.identity.messaging.EmailNotifications;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -23,10 +24,15 @@ public class AccountService {
 
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
+    private final EmailNotifications notifications;
+    private final EmailVerificationService verification;
 
-    public AccountService(UserRepository users, PasswordEncoder passwordEncoder) {
+    public AccountService(UserRepository users, PasswordEncoder passwordEncoder, EmailNotifications notifications,
+                          EmailVerificationService verification) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
+        this.notifications = notifications;
+        this.verification = verification;
     }
 
     @Transactional
@@ -42,6 +48,8 @@ public class AccountService {
                 if (users.existsByEmail(email)) throw new EmailAlreadyRegisteredException(email);
                 user.setEmail(email);
                 user.setEmailVerified(false);
+                users.save(user);
+                verification.issue(user);
                 log.info("Correo actualizado userId={}", userId);
             }
         }
@@ -57,6 +65,7 @@ public class AccountService {
         }
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         users.save(user);
+        notifications.request("PASSWORD_CHANGED", user.getEmail(), user.getLocale(), java.util.Map.of());
         log.info("Contrasena actualizada userId={}", userId);
     }
 
