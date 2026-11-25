@@ -24,7 +24,7 @@ class AuthControllerTest {
         authService = mock(AuthService.class);
 
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new AuthController(authService))
+                .standaloneSetup(new AuthController(authService, mock(pe.upc.peaceapp.identity.application.PasswordResetService.class)))
                 .build();
     }
 
@@ -41,7 +41,7 @@ class AuthControllerTest {
                 .andExpect(status().isCreated());
 
         verify(authService).register(
-                "nuevo@peaceapp.pe", "clave12345");
+                "nuevo@peaceapp.pe", "clave12345", null, null, null);
     }
 
     @Test

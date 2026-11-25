@@ -45,7 +45,7 @@ class AuthServiceTest {
         when(passwordEncoder.encode("clave12345")).thenReturn("hash");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User created = authService.register("nueva@peaceapp.pe", "clave12345");
+        User created = authService.register("nueva@peaceapp.pe", "clave12345", null, null, null);
 
         assertThat(created.getEmail()).isEqualTo("nueva@peaceapp.pe");
         assertThat(created.getPasswordHash()).isEqualTo("hash");
@@ -56,7 +56,7 @@ class AuthServiceTest {
         authService = newAuthService();
         when(userRepository.existsByEmail("ya@peaceapp.pe")).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.register("ya@peaceapp.pe", "clave12345"))
+        assertThatThrownBy(() -> authService.register("ya@peaceapp.pe", "clave12345", null, null, null))
                 .isInstanceOf(EmailAlreadyRegisteredException.class);
     }
 
@@ -104,7 +104,7 @@ void registerNormalizesEmailToLowercase() {
             .thenAnswer(invocation -> invocation.getArgument(0));
 
     User created = authService.register(
-            "Usuario@PeaceApp.pe", "clave12345"
+            "Usuario@PeaceApp.pe", "clave12345", null, null, null
     );
 
     assertThat(created.getEmail())

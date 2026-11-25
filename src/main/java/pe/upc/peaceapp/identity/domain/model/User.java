@@ -34,6 +34,20 @@ public class User {
     /** US-26: jurisdiccion asignada a cuentas institucionales. Null para los demas roles. */
     private String jurisdiction;
 
+    @Column(length = 50)
+    private String firstName;
+
+    @Column(length = 50)
+    private String lastName;
+
+    @Column(length = 20)
+    private String phoneNumber;
+
+    @Column(length = 500)
+    private String avatarUrl;
+
+    private Instant deletedAt;
+
     private boolean emailVerified = false;
 
     private int failedLoginAttempts = 0;

@@ -30,7 +30,7 @@ class ProfileControllerTest {
         userId = UUID.randomUUID();
 
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new ProfileController(profileService))
+                .standaloneSetup(new ProfileController(profileService, mock(pe.upc.peaceapp.identity.application.AccountService.class)))
                 .build();
     }
 
