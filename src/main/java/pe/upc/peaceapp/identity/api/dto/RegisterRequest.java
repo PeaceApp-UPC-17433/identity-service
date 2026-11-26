@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record RegisterRequest(
-        @NotBlank @Email @Size(max = 120) String email,
+        @NotBlank @Email @Pattern(regexp = EmailPolicy.REGEX, message = EmailPolicy.MESSAGE) @Size(max = 120) String email,
         @NotBlank @Pattern(regexp = PasswordPolicy.REGEX, message = PasswordPolicy.MESSAGE) String password,
         @Size(max = 50) String firstName,
         @Size(max = 50) String lastName,

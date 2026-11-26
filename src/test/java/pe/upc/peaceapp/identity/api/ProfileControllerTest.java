@@ -3,10 +3,13 @@ package pe.upc.peaceapp.identity.api;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import pe.upc.peaceapp.identity.application.AccountService;
 import pe.upc.peaceapp.identity.application.ProfileService;
 import pe.upc.peaceapp.identity.domain.model.InterestZone;
 import pe.upc.peaceapp.identity.domain.model.User;
@@ -21,17 +24,46 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ProfileControllerTest {
 
     private ProfileService profileService;
+    private AccountService accountService;
     private MockMvc mockMvc;
     private UUID userId;
 
     @BeforeEach
     void setUp() {
         profileService = mock(ProfileService.class);
+        accountService = mock(AccountService.class);
         userId = UUID.randomUUID();
 
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new ProfileController(profileService, mock(pe.upc.peaceapp.identity.application.AccountService.class)))
+                .standaloneSetup(new ProfileController(profileService, accountService))
                 .build();
+    }
+
+    // Hallazgo de ZAP: @Email da por válida la cadena vacía y es permisivo, así que PUT /users/me dejaba la cuenta
+    // sin correo (el usuario ya no podía iniciar sesión) y mandaba el código de verificación a "" o a "zj{@7533*3107}zj".
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "zaproxy@example.com'", "zj{@7533*3107}zj", "sin-arroba.pe", "a@b"})
+    void updateProfileRejectsAnInvalidEmail(String email) throws Exception {
+        mockMvc.perform(put("/api/v1/users/me")
+                        .principal(new TestingAuthenticationToken(userId.toString(), null))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\": \"" + email + "\"}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(accountService);
+    }
+
+    @Test
+    void updateProfileAcceptsAValidEmail() throws Exception {
+        User user = new User("nuevo+avisos@sub.peaceapp.pe", "hash");
+        user.setId(userId);
+        when(accountService.updateProfile(eq(userId), any())).thenReturn(user);
+
+        mockMvc.perform(put("/api/v1/users/me")
+                        .principal(new TestingAuthenticationToken(userId.toString(), null))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\": \"nuevo+avisos@sub.peaceapp.pe\"}"))
+                .andExpect(status().isOk());
     }
 
     @Test
