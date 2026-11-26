@@ -9,3 +9,5 @@
 bc892e345a8a1aa8c998b4e083b6821fbbb29d24:evidence/startup.log:generic-api-key:33
 # src/test/java/pe/upc/peaceapp/identity/bdd/steps/AccesoInstitucionalSteps.java -> fixture de pruebas
 a9cd6a5d9af49c5ff2d150b664424440511c865c:src/test/java/pe/upc/peaceapp/identity/bdd/steps/AccesoInstitucionalSteps.java:generic-api-key:18
+# src/test/java/pe/upc/peaceapp/identity/api/AuthControllerTest.java -> contraseña de prueba en el JSON del test de correo inválido
+e48480474f0b963a6cb39e152dab027c8a235089:src/test/java/pe/upc/peaceapp/identity/api/AuthControllerTest.java:generic-api-key:107
