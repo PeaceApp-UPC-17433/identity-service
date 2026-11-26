@@ -8,7 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import pe.upc.peaceapp.identity.security.JwtAuthenticationFilter;
+import pe.upc.peaceapp.identity.security.GatewayIdentityFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -19,16 +19,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, GatewayIdentityFilter identityFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**", "/actuator/**",
+                        .requestMatchers("/error", "/api/v1/auth/**", "/actuator/**",
                                 "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/institutions/**").hasRole("INSTITUCIONAL")
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMINISTRADOR")
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(identityFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }

@@ -34,6 +34,37 @@ public class User {
     /** US-26: jurisdiccion asignada a cuentas institucionales. Null para los demas roles. */
     private String jurisdiction;
 
+    @Column(length = 50)
+    private String firstName;
+
+    @Column(length = 50)
+    private String lastName;
+
+    @Column(length = 20)
+    private String phoneNumber;
+
+    @Column(length = 500)
+    private String avatarUrl;
+
+    @Column(nullable = false, length = 5)
+    private String locale = "es";
+
+    private boolean mfaEnabled = false;
+
+    @Column(length = 200)
+    private String mfaSecret;
+
+    @Column(length = 200)
+    private String mfaPendingSecret;
+
+    private long mfaLastStep = 0;
+
+    private int mfaFailedAttempts = 0;
+
+    private Instant mfaLockedUntil;
+
+    private Instant deletedAt;
+
     private boolean emailVerified = false;
 
     private int failedLoginAttempts = 0;
@@ -48,6 +79,10 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InterestZone> interestZones = new ArrayList<>();
+
+    public boolean isStaff() {
+        return role == Role.MODERADOR || role == Role.ADMINISTRADOR;
+    }
 
     public User(String email, String passwordHash) {
         this.email = email;

@@ -6,11 +6,17 @@ import pe.upc.peaceapp.identity.domain.model.User;
 import java.util.List;
 import java.util.UUID;
 
-/** US-03 / US-05: perfil del usuario y su reputacion. */
 public record UserProfileResponse(
         UUID id,
         String email,
         Role role,
+        boolean emailVerified,
+        boolean mfaEnabled,
+        String locale,
+        String firstName,
+        String lastName,
+        String phoneNumber,
+        String avatarUrl,
         String jurisdiction,
         int reputationScore,
         List<InterestZoneResponse> interestZones
@@ -20,6 +26,13 @@ public record UserProfileResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getRole(),
+                user.isEmailVerified(),
+                user.isMfaEnabled(),
+                user.getLocale(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getPhoneNumber(),
+                user.getAvatarUrl(),
                 user.getJurisdiction(),
                 user.getReputationScore(),
                 user.getInterestZones().stream().map(InterestZoneResponse::from).toList());

@@ -19,6 +19,9 @@ import java.util.Date;
  */
 @Service
 public class JwtService {
+    private static final String MFA_PURPOSE = "mfa-challenge";
+    private static final long MFA_CHALLENGE_MINUTES = 5;
+
 
     private final SecretKey signingKey;
     private final long expirationMinutes;
@@ -31,16 +34,39 @@ public class JwtService {
     }
 
     public String issueToken(User user) {
+        return issueToken(user, false);
+    }
+
+    public String issueToken(User user, boolean mfaVerified) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole().name())
                 .claim("jurisdiction", user.getJurisdiction())
+                .claim("emailVerified", user.isEmailVerified())
+                .claim("mfa", mfaVerified)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(expirationMinutes, ChronoUnit.MINUTES)))
                 .signWith(signingKey)
                 .compact();
+    }
+
+    public String issueMfaChallenge(User user) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .subject(user.getId().toString())
+                .claim("purpose", MFA_PURPOSE)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plus(MFA_CHALLENGE_MINUTES, ChronoUnit.MINUTES)))
+                .signWith(signingKey)
+                .compact();
+    }
+
+    public java.util.UUID parseMfaChallenge(String token) {
+        Claims claims = parseClaims(token);
+        if (!MFA_PURPOSE.equals(claims.get("purpose", String.class))) throw new io.jsonwebtoken.JwtException("Token sin proposito MFA");
+        return java.util.UUID.fromString(claims.getSubject());
     }
 
     public Claims parseClaims(String token) {

@@ -18,37 +18,65 @@ import pe.upc.peaceapp.identity.security.JwtService;
  */
 @Service
 public class AuthService {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final int maxFailedLoginAttempts;
+    private final EmailVerificationService verification;
 
     public AuthService(UserRepository userRepository,
                         PasswordEncoder passwordEncoder,
                         JwtService jwtService,
+                        EmailVerificationService verification,
                         @Value("${identity.security.max-failed-login-attempts}") int maxFailedLoginAttempts) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.verification = verification;
         this.maxFailedLoginAttempts = maxFailedLoginAttempts;
     }
 
     @Transactional
-    public User register(String email, String rawPassword) {
-        if (userRepository.existsByEmail(email)) {
-            throw new EmailAlreadyRegisteredException(email);
+    public User register(String email, String rawPassword, String firstName, String lastName, String phoneNumber, String locale) {
+        String normalizedEmail = normalizeEmail(email);
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            throw new EmailAlreadyRegisteredException(normalizedEmail);
         }
-        User user = new User(email, passwordEncoder.encode(rawPassword));
-        return userRepository.save(user);
+
+        User user = new User(normalizedEmail, passwordEncoder.encode(rawPassword));
+        user.setFirstName(blankToNull(firstName));
+        user.setLastName(blankToNull(lastName));
+        user.setPhoneNumber(blankToNull(phoneNumber));
+        user.setLocale(normalizeLocale(locale));
+        User saved = userRepository.save(user);
+        verification.issue(saved);
+        log.info("Usuario registrado userId={}", saved.getId());
+        return saved;
     }
 
-    @Transactional
+    public static String normalizeEmail(String email) {
+        return email.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    public static String normalizeLocale(String locale) {
+        return locale != null && locale.toLowerCase(java.util.Locale.ROOT).startsWith("en") ? "en" : "es";
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    @Transactional(noRollbackFor = InvalidCredentialsException.class)
     public LoginResponse login(String email, String rawPassword) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(InvalidCredentialsException::new);
+        User user = userRepository.findByEmail(normalizeEmail(email)).orElseThrow(() -> {
+            log.info("Login rechazado: usuario inexistente");
+            return new InvalidCredentialsException();
+        });
 
         if (user.isLocked()) {
+            log.warn("Login rechazado: cuenta bloqueada userId={}", user.getId());
             throw new AccountLockedException();
         }
 
@@ -56,13 +84,20 @@ public class AuthService {
             user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
             if (user.getFailedLoginAttempts() >= maxFailedLoginAttempts) {
                 user.setLocked(true);
+                log.warn("Cuenta bloqueada por intentos fallidos userId={}", user.getId());
             }
             userRepository.save(user);
+            log.info("Login rechazado: credenciales invalidas userId={} intentos={}", user.getId(), user.getFailedLoginAttempts());
             throw new InvalidCredentialsException();
         }
 
         user.setFailedLoginAttempts(0);
         userRepository.save(user);
+        if (user.isMfaEnabled()) {
+            log.info("Login con contrasena correcta, falta segundo factor userId={}", user.getId());
+            return LoginResponse.challenge(jwtService.issueMfaChallenge(user));
+        }
+        log.info("Login correcto userId={}", user.getId());
         return new LoginResponse(jwtService.issueToken(user));
     }
 }

@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import pe.upc.peaceapp.identity.api.dto.InterestZoneRequest;
 import pe.upc.peaceapp.identity.api.dto.InterestZoneResponse;
 import pe.upc.peaceapp.identity.api.dto.UserProfileResponse;
+import pe.upc.peaceapp.identity.api.dto.AccountRequests.ChangePasswordRequest;
+import pe.upc.peaceapp.identity.api.dto.AccountRequests.UpdateProfileRequest;
+import pe.upc.peaceapp.identity.application.AccountService;
 import pe.upc.peaceapp.identity.application.ProfileService;
 
 import java.util.UUID;
@@ -17,9 +20,11 @@ import java.util.UUID;
 public class ProfileController {
 
     private final ProfileService profileService;
+    private final AccountService accountService;
 
-    public ProfileController(ProfileService profileService) {
+    public ProfileController(ProfileService profileService, AccountService accountService) {
         this.profileService = profileService;
+        this.accountService = accountService;
     }
 
     /** US-03 / US-05: ver perfil, zonas de interes y reputacion propias. */
@@ -36,6 +41,23 @@ public class ProfileController {
         var zone = profileService.addInterestZone(currentUserId(authentication),
                 request.label(), request.latitude(), request.longitude(), request.radiusMeters());
         return ResponseEntity.status(HttpStatus.CREATED).body(InterestZoneResponse.from(zone));
+    }
+
+    @PutMapping
+    public UserProfileResponse updateProfile(Authentication authentication, @Valid @RequestBody UpdateProfileRequest request) {
+        return UserProfileResponse.from(accountService.updateProfile(currentUserId(authentication), request));
+    }
+
+    @PutMapping("/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
+        accountService.changePassword(currentUserId(authentication), request.currentPassword(), request.newPassword());
+    }
+
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAccount(Authentication authentication) {
+        accountService.deleteAccount(currentUserId(authentication));
     }
 
     private UUID currentUserId(Authentication authentication) {

@@ -11,6 +11,7 @@ import pe.upc.peaceapp.identity.api.error.InvalidCredentialsException;
 import pe.upc.peaceapp.identity.domain.model.User;
 import pe.upc.peaceapp.identity.domain.repository.UserRepository;
 import pe.upc.peaceapp.identity.security.JwtService;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import java.util.Optional;
 
@@ -34,7 +35,7 @@ class AuthServiceTest {
     private AuthService authService;
 
     private AuthService newAuthService() {
-        return new AuthService(userRepository, passwordEncoder, jwtService, MAX_FAILED_ATTEMPTS);
+        return new AuthService(userRepository, passwordEncoder, jwtService, mock(EmailVerificationService.class), MAX_FAILED_ATTEMPTS);
     }
 
     @Test
@@ -44,7 +45,7 @@ class AuthServiceTest {
         when(passwordEncoder.encode("clave12345")).thenReturn("hash");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        User created = authService.register("nueva@peaceapp.pe", "clave12345");
+        User created = authService.register("nueva@peaceapp.pe", "clave12345", null, null, null, null);
 
         assertThat(created.getEmail()).isEqualTo("nueva@peaceapp.pe");
         assertThat(created.getPasswordHash()).isEqualTo("hash");
@@ -55,7 +56,7 @@ class AuthServiceTest {
         authService = newAuthService();
         when(userRepository.existsByEmail("ya@peaceapp.pe")).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.register("ya@peaceapp.pe", "clave12345"))
+        assertThatThrownBy(() -> authService.register("ya@peaceapp.pe", "clave12345", null, null, null, null))
                 .isInstanceOf(EmailAlreadyRegisteredException.class);
     }
 
@@ -89,4 +90,27 @@ class AuthServiceTest {
 
         verify(passwordEncoder, never()).matches(any(), any());
     }
+    @Test
+void registerNormalizesEmailToLowercase() {
+    authService = newAuthService();
+
+   when(userRepository.existsByEmail(anyString()))
+        .thenReturn(false);
+
+    when(passwordEncoder.encode("clave12345"))
+            .thenReturn("hash");
+
+    when(userRepository.save(any(User.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+    User created = authService.register(
+            "Usuario@PeaceApp.pe", "clave12345", null, null, null, null
+    );
+
+    assertThat(created.getEmail())
+            .isEqualTo("usuario@peaceapp.pe");
+
+    verify(userRepository)
+            .existsByEmail("usuario@peaceapp.pe");
+}
 }
