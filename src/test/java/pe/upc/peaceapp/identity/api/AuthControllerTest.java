@@ -98,6 +98,18 @@ class AuthControllerTest {
         verifyNoInteractions(authService);
     }
 
+    // Sonda de inyección de plantillas de ZAP: @Email la aceptaba y el código de verificación salía hacia ella.
+    @Test
+    void registerRejectsAnEmailThatOnlyLooksValidToALenientCheck() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"email":"zj{@7533*3107}zj","password":"Clave-Segura-2026"}
+                        """))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(authService);
+    }
+
     @Test
     void registerRejectsMalformedEmail() throws Exception {
         mockMvc.perform(post("/api/v1/auth/register")

@@ -16,7 +16,8 @@ public final class AccountRequests {
             @Size(max = 50) String lastName,
             @Size(max = 20) String phoneNumber,
             @Size(max = 500) String avatarUrl,
-            @Email @Size(max = 120) String email) {
+            // Opcional (null = no cambia), pero si viene debe ser un correo real: "" dejaba la cuenta sin correo.
+            @Email @Pattern(regexp = EmailPolicy.REGEX, message = EmailPolicy.MESSAGE) @Size(max = 120) String email) {
     }
 
     public record ChangePasswordRequest(
