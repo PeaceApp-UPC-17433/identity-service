@@ -1,0 +1,11 @@
+# Hallazgos historicos revisados (fingerprint). Ver el motivo en cada linea.
+# src/test/java/pe/upc/peaceapp/identity/application/EmailVerificationServiceTest.java -> fixture de pruebas
+6c7ed7d6101b0cbba0e207952c601b02a7bafdb1:src/test/java/pe/upc/peaceapp/identity/application/EmailVerificationServiceTest.java:generic-api-key:28
+# src/test/resources/application-test.yml -> fixture de pruebas
+6c7ed7d6101b0cbba0e207952c601b02a7bafdb1:src/test/resources/application-test.yml:generic-api-key:21
+# src/test/java/pe/upc/peaceapp/identity/application/MfaServiceTest.java -> fixture de pruebas
+6c7ed7d6101b0cbba0e207952c601b02a7bafdb1:src/test/java/pe/upc/peaceapp/identity/application/MfaServiceTest.java:generic-api-key:35
+# evidence/startup.log -> password autogenerado por Spring en un log local, ya inexistente
+bc892e345a8a1aa8c998b4e083b6821fbbb29d24:evidence/startup.log:generic-api-key:33
+# src/test/java/pe/upc/peaceapp/identity/bdd/steps/AccesoInstitucionalSteps.java -> fixture de pruebas
+a9cd6a5d9af49c5ff2d150b664424440511c865c:src/test/java/pe/upc/peaceapp/identity/bdd/steps/AccesoInstitucionalSteps.java:generic-api-key:18
